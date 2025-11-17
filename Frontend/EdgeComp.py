@@ -4,29 +4,24 @@ import random
 app = Flask(__name__)
 
 # ---------------------
-# SIMULAÇÃO DE DADOS
+# SIMULAÇÕES
 # ---------------------
+
 def simular_relatorio_semana():
-    return {
-        "temp_critica": random.randint(2, 15),
-        "energia_total": round(random.uniform(20, 60), 2)
-    }
+    luz_media = random.randint(5, 30)
+    return {"ruim": luz_media}
 
 def simular_relatorio_ontem():
-    return {
-        "temp_critica": random.randint(0, 5),
-        "energia_total": round(random.uniform(3, 10), 2)
-    }
+    luz_media = random.randint(0, 10)
+    return {"ruim": luz_media}
 
 def simular_grafico_hoje():
-    horas = list(range(24))
-    temp = [round(random.uniform(20, 70), 2) for _ in horas]
-    pot = [round(random.uniform(50, 300), 2) for _ in horas]
-    return horas, temp, pot
-
+    horas = ['00h','03h','06h','09h','12h','15h','18h','21h']
+    valores = [random.randint(0, 600) for _ in horas]  # agora pode mostrar a faixa crítica
+    return horas, valores
 
 # ---------------------
-# HTML COM TEMA ROXO E TELA CENTRALIZADA
+# INTERFACE
 # ---------------------
 
 HTML = """
@@ -35,17 +30,18 @@ HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dados de Segurança e Economia</title>
+    <title>Proteção Contra Luz Azul</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #2d0b47; /* Roxo escuro */
+            background: #2d0b47;
             color: white;
             height: 100vh;
 
-            /* Esta linha que centralizava tudo e bloqueava os outros elementos */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -53,10 +49,6 @@ HTML = """
 
         .center-container {
             text-align: center;
-        }
-
-        h1 {
-            font-size: 32px;
         }
 
         button {
@@ -67,11 +59,6 @@ HTML = """
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: 0.2s;
-        }
-
-        button:hover {
-            background: #b174f5;
         }
 
         #conteudo {
@@ -94,6 +81,7 @@ HTML = """
             padding: 20px;
             border-radius: 12px;
             min-width: 250px;
+            text-align: center;
         }
 
         .grafico {
@@ -107,7 +95,7 @@ HTML = """
 <body>
 
     <div class="center-container" id="inicio">
-        <h1>Dados de Segurança e Economia</h1>
+        <h1>Proteção Contra Luz Azul</h1>
         <button onclick="mostrarConteudo()">Iniciar</button>
     </div>
 
@@ -116,88 +104,100 @@ HTML = """
         <div class="cards-container">
             <div class="card">
                 <h2>Relatório da Semana</h2>
-                <p>🔺 Temperatura acima do crítico: <b>0 vezes</b></p>
-                <p>⚡ Gasto total de energia: <b>0 kWh</b></p>
+                <p>⚠ Somente Luz Azul: <b>{{ semana['ruim'] }} vezes</b></p>
             </div>
 
             <div class="card">
                 <h2>Relatório de Ontem</h2>
-                <p>🔺 Temperatura acima do crítico: <b>0 vezes</b></p>
-                <p>⚡ Gasto total de energia: <b>0 kWh</b></p>
+                <p>⚠ Somente Luz Azul: <b>{{ ontem['ruim'] }} vezes</b></p>
             </div>
         </div>
 
         <div class="grafico">
-            <h2>Gráfico de Hoje</h2>
+            <h2>Gráfico de Luminosidade (Hoje)</h2>
             <canvas id="graficoHoje"></canvas>
         </div>
+
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function mostrarConteudo() {
+        document.getElementById("inicio").style.display = "none";
+        document.body.style.display = "block"; // desbloqueia layout normal
+        document.getElementById("conteudo").style.display = "block";
+        gerarGrafico();
+    }
 
-    <script>
-        function mostrarConteudo() {
-            // Oculta título e botão
-            document.getElementById("inicio").style.display = "none";
+    function gerarGrafico() {
+        const ctx = document.getElementById('graficoHoje').getContext('2d');
 
-            // Remove o flex que centralizava tudo
-            document.body.style.display = "block";
-
-            // Mostra o conteúdo
-            document.getElementById("conteudo").style.display = "block";
-
-            gerarGrafico();
-        }
-
-        function gerarGrafico() {
-            const ctx = document.getElementById('graficoHoje').getContext('2d');
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['00h', '03h', '06h', '09h', '12h', '15h', '18h', '21h'],
-                    datasets: [
-                        {
-                            label: 'Temperatura (°C)',
-                            data: [20, 22, 25, 27, 30, 28, 26, 23],
-                            borderColor: '#c77dff',
-                            borderWidth: 2
-                        },
-                        {
-                            label: 'Consumo (W)',
-                            data: [10, 12, 16, 20, 24, 23, 18, 15],
-                            borderColor: '#9d4edd',
-                            borderWidth: 2
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ horas | safe }},
+                datasets: [
+                    {
+                        label: 'Luminosidade',
+                        data: {{ valores | safe }},
+                        borderColor: '#c77dff',
+                        borderWidth: 3,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: 'white' }},
+                    annotation: {
+                        annotations: {
+                            faixaCritica: {
+                                type: 'box',
+                                yMin: 200,
+                                yMax: 500,
+                                backgroundColor: "rgba(255,0,0,0.25)",
+                                borderWidth: 0
+                            }
                         }
-                    ]
+                    }
                 },
-                options: {
-                    responsive: true
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 600,
+                        ticks: { color: "white" }
+                    },
+                    x: {
+                        ticks: { color: "white" }
+                    }
                 }
-            });
-        }
-    </script>
+            }
+        });
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
 
 </body>
 </html>
 """
 
 # ---------------------
-# ROTA PRINCIPAL
+# ROTA
 # ---------------------
+
 @app.route("/")
 def index():
     semana = simular_relatorio_semana()
     ontem = simular_relatorio_ontem()
-    horas, temp, pot = simular_grafico_hoje()
+    horas, valores = simular_grafico_hoje()
 
     return render_template_string(
         HTML,
         semana=semana,
         ontem=ontem,
         horas=horas,
-        temperaturas=temp,
-        potencias=pot
+        valores=valores
     )
 
 if __name__ == "__main__":
