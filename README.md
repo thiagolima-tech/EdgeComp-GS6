@@ -17,7 +17,7 @@ Broker MQTT na nuvem (IP configurável)
 Servidor Flask com Socket.IO  
 Python 3.x com bibliotecas:  pip install flask flask-socketio paho-mqtt
 
-Link do Wokwi (simulação): [Clique aqui para acessar](#)
+Link do Wokwi (simulação): [Clique aqui para acessar](https://wokwi.com/projects/447912423480228865)
 
 ## Configuração do ESP32
 
@@ -65,7 +65,7 @@ Insira abaixo fotos do ESP32, LDR e da interface web em funcionamento:
 ![Foto do projeto 2](./assets/Screenshot_20251117_214047.png)  
 ![Foto do projeto 3](./assets/Screenshot_20251117_214315.png)
 
-## Nomes do Grupo
+## Integrantes do Grupo
 Thiago Lima Cavalcanti - RM563416  
 Vitor Alcantra - RM565885  
 Matheus Vasques - RM563309 
