@@ -21,11 +21,8 @@ const int default_D4 = 2;  // LED onboard (GPIO2)
 // PINOS E LÓGICA DE LUMINOSIDADE
 // =========================
 const int LDR_PIN = 34;
- 
-// 👉 AJUSTE ESSES DOIS VALORES CONFORME MEDIDAS REAIS
-// quanto MAIOR o LDR, MENOS luz
-const int LDR_BRIGHT_MAX = 1200;  // até aqui: MUITA luz  -> OK
-const int LDR_DARK_MIN   = 3000;  // daqui pra cima: ESCURO -> OK
+const int LDR_BRIGHT_MAX = 1200;  // até aqui OK
+const int LDR_DARK_MIN   = 3000;  // daqui pra cima OK
 // entre LDR_BRIGHT_MAX e LDR_DARK_MIN: ALERTA
  
 WiFiClient espClient;
@@ -35,7 +32,7 @@ PubSubClient mqttClient(espClient);
 int estadoLuminosidade = -1;
  
 // =========================
-// FUNÇÕES AUXILIARES
+// FUNÇÕES EXTRAS
 // =========================
 void conectaWiFi() {
   Serial.print("Conectando ao WiFi: ");
@@ -120,17 +117,16 @@ void loop() {
   int novoEstado;
  
   if (ldrValue >= LDR_DARK_MIN) {
-    // Escuro / sem luminosidade -> OK
+    // Escuro sem luminosidade -> OK
     novoEstado = 0;
   } else if (ldrValue <= LDR_BRIGHT_MAX) {
-    // Muito claro / muita luz -> OK
+    // Muito claro -> OK
     novoEstado = 2;
   } else {
     // Faixa intermediária -> ALERTA
     novoEstado = 1;
   }
  
-  // Só envia MQTT se o estado mudou
   if (novoEstado != estadoLuminosidade) {
     estadoLuminosidade = novoEstado;
  
